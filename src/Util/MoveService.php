@@ -4,8 +4,6 @@ namespace App\Util;
 
 use App\Util\TicTacToe\ArrayBoardParser;
 use App\Util\TicTacToe\BoardAnalyser;
-use App\Util\TicTacToe\BoardAnalyser2;
-use App\Util\TicTacToe\BoardAnalyserFinal;
 
 /**
  * Description of Move
@@ -35,9 +33,7 @@ class MoveService implements MoveInterface
     {
         $board = ArrayBoardParser::parse($boardState);
         $board->finalize($playerUnit);
-//        $analyser = new BoardAnalyser($board, $playerUnit);
-//        $analyser = new BoardAnalyser2($board, $playerUnit);
-        $analyser = new BoardAnalyserFinal($board, $playerUnit);
+        $analyser = new BoardAnalyser($board, $playerUnit);
         return $analyser->analyse();
     }
 }

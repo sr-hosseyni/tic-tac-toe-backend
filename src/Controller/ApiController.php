@@ -17,7 +17,7 @@ use FOS\RestBundle\Controller\Annotations as FOSRest;
  *
  * @Route("/api")
  */
-class TestController extends Controller
+class ApiController extends Controller
 {
     /**
      * @FOSRest\Post("/move")
@@ -27,12 +27,7 @@ class TestController extends Controller
     public function moveAction(Request $request, MoveService $moveService)
     {
         $boardState = json_decode($request->getContent());
-
-//        var_dump($boardState);die;
-
-
         $result = $moveService->makeMove($boardState, 'X');
-
         return View::create($result, Response::HTTP_OK, []);
     }
 }

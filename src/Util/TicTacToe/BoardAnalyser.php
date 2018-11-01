@@ -24,12 +24,23 @@ class BoardAnalyser
 
     /**
      *
+     * @var int[][]
+     */
+    private $poitns;
+
+    /**
+     *
      * @param Board $board
      */
     public function __construct(Board $board, $playerUnit = 'X')
     {
         $this->board = $board;
         $this->playerUnit = $playerUnit;
+        $this->poitns = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ];
     }
 
     /**
@@ -54,36 +65,30 @@ class BoardAnalyser
             return $this->makeMoveArray($result);
         }
 
-        if ($result = $this->makeDoubleChance()) {
-            // making double chance
-            return $this->makeMoveArray($result);
-        }
+        // making double chance
+        $this->makeDoubleChance();
 
-        if ($result = $this->avoidToMakingDoubleChanceByOpponent()) {
-            // avoid making double chance by opponent
-            return $this->makeMoveArray($result);
-        }
+        // avoid making double chance by opponent
+        $this->avoidToMakingDoubleChanceByOpponent();
+        
+        // destroy opponent chance
+        $this->destroyOpponentChance();
 
-        if ($result = $this->makeChanceAndDestroyOpponentChance()) {
-            // make chance and destroy opponent chance
-            return $this->makeMoveArray($result);
-        }
+//        // make possession in best junction of vacant series
+//        $this->makePossessionInBestJunctionOfVacantSeries();
 
-        if ($result = $this->makePossessionInBestJunctionOfVacantSeries()) {
-            // make possession in best junction of vacant series
-            return $this->makeMoveArray($result);
-        }
+        // select a spot in one of totaly vacant series
+        $this->selectAVacatSpot();
 
-        if ($result = $this->selectAVacatSpot()) {
-            // select a spot in one of totaly vacant series
-            return $this->makeMoveArray($result);
+        if ($spot = $this->getBestMoveByMaxPoint()) {
+            return $this->makeMoveArray($spot);
         }
-
+        
         if ($result = $this->board->getVacantSpots()) {
             // select a vacant spot on board
             return $this->makeMoveArray($result[0]);
         }
-
+        
         // No any move available, game is over with draw
         return [-1, -1, 'OX'];
     }
@@ -149,15 +154,13 @@ class BoardAnalyser
      * Check Possibility Of Enforcing Opponent To Lose with making double chance simultaneously in next move
      * @return Spot
      */
-    private function makeDoubleChance()
+    private function makeDoubleChance(): void
     {
         $chanceSeries = $this->board->getSeriesByStatsIndex(201);
 
         if (count($chanceSeries) > 1) {
-            return $this->checkJunktions($chanceSeries);
+            $this->addPoint($this->checkJunktions($chanceSeries), 5);
         }
-
-        return null;
     }
 
     /**
@@ -166,30 +169,44 @@ class BoardAnalyser
     private function avoidToMakingDoubleChanceByOpponent()
     {
         $dangerSeries = $this->board->getSeriesByStatsIndex(210);
+        $chanceSeries = $this->board->getSeriesByStatsIndex(201);
 
         if (count($dangerSeries) > 1) {
-            return $this->checkJunktions($dangerSeries);
+            $oppDoubleChancesSpots = $this->checkJunktions($dangerSeries);
+            $this->addPoint($oppDoubleChancesSpots, 10);
+            foreach ($chanceSeries as $serie) {
+                foreach ($vacantSpots = $serie->getVacantSpots() as $key => $vspot) {
+                    foreach ($oppDoubleChancesSpots as $sdcSpot) {
+                        if ($vspot === $sdcSpot) {
+                            continue 2;
+                        }
+                    }
+                    unset($vacantSpots[$key]);
+                    $this->addPoint($vacantSpots, 20);
+                }
+            }
         }
-
-        return null;
     }
 
     /**
      *
      * @param Series[] $series
+     * @param Series[] $notInSeries
+     * @return Spot[]
      */
-    private function checkJunktions(array $series, array $notInSeries = [])
+    private function checkJunktions(array $series, array $notInSeries = []): array
     {
+        $junctions = [];
         for ($i = 0; $i < count($series); $i++) {
             for ($j = $i + 1; $j < count($series); $j++) {
                 $spot = $series[$i]->getJunctionWith($series[$j]);
                 if ($spot && $spot->isVacant() && !$this->isSpotOnSeries($spot, $notInSeries)) {
-                    return $spot;
+                    $junctions[] = $spot;
                 }
             }
         }
 
-        return null;
+        return $junctions;
     }
 
     private function isSpotOnSeries($spot, array $series)
@@ -207,50 +224,73 @@ class BoardAnalyser
      *
      * @return array
      */
-    private function makeChanceAndDestroyOpponentChance()
+    private function destroyOpponentChance()
     {
         $dangerSeries = $this->board->getSeriesByStatsIndex(210);
-        $chanceSeries = $this->board->getSeriesByStatsIndex(201);
-        $series = array_merge($dangerSeries, $chanceSeries);
-
-        if (count($series) > 1) {
-            return $this->checkJunktions($series);
+        foreach ($dangerSeries as $serie) {
+            $this->addPoint($serie->getVacantSpots(), 3);
         }
-
-        return null;
     }
 
     /**
      *
      * @return Spot
      */
-    private function makePossessionInBestJunctionOfVacantSeries()
+    private function makePossessionInBestJunctionOfVacantSeries(): void
     {
         $vacantSeries = $this->board->getSeriesByStatsIndex(300);
         $opponentSeries = $this->board->getSeriesByStatsIndex(210);
 
         if (count($vacantSeries) > 1 && $opponentSeries) {
-            return $this->checkJunktions($vacantSeries, $opponentSeries);
+            $this->addPoint($this->checkJunktions($vacantSeries, $opponentSeries), 3);
         }
-
-        return null;
     }
 
     /**
      *
      * @return Spot
      */
-    private function selectAVacatSpot()
+    private function selectAVacatSpot(): void
     {
         $vacantSeries = $this->board->getSeriesByStatsIndex(300);
 
         if (!$vacantSeries) {
-            return null;
+            return;
         }
 
-        /* @var $serie Series */
-        $serie = $vacantSeries[array_rand($vacantSeries)];
-        $vacantSpots = $serie->getVacantSpots();
-        return $vacantSpots[array_rand($vacantSpots)];
+        foreach ($vacantSeries as $vacantSerie) {
+            $this->addPoint($vacantSerie->getVacantSpots(), 1);
+        }
+    }
+
+    /**
+     *
+     * @param \App\Util\TicTacToe\Spot[] $spots
+     */
+    private function addPoint(array $spots, int $point)
+    {
+        foreach ($spots as $spot) {
+            if ($spot->isVacant()) {
+                $this->poitns[$spot->getX()][$spot->getY()] += $point;
+            }
+        }
+    }
+
+    /**
+     *
+     * @return type
+     */
+    private function getBestMoveByMaxPoint()
+    {
+        $max = -1;
+        $bestSpot = null;
+        foreach ($this->board->getVacantSpots() as $spot) {
+            if ($this->poitns[$spot->getX()][$spot->getY()] > $max) {
+                $max = $this->poitns[$spot->getX()][$spot->getY()];
+                $bestSpot = $spot;
+            }
+        }
+
+        return $bestSpot;
     }
 }
