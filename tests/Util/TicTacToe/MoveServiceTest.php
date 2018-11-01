@@ -2,7 +2,7 @@
 
 namespace App\Tests\Util\TicTacToe;
 
-use App\Util\TicTAcToe\Move;
+use App\Util\MoveService;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -10,11 +10,11 @@ use PHPUnit\Framework\TestCase;
  *
  * @author sr_hosseini <rassoul.hosseini at gmail.com>
  */
-class MoveTest extends TestCase
+class MoveServiceTest extends TestCase
 {
     public function testMakeMove()
     {
-        $calculator = new Move();
+        $calculator = new MoveService();
         $result = $calculator->makeMove([
             ['X', 'O', '' ],
             ['X', 'O', 'O'],
@@ -22,6 +22,6 @@ class MoveTest extends TestCase
         ], 'X');
 
         // assert that your calculator added the numbers correctly!
-        $this->assertEquals([2, 0, 'O'], $result);
+        $this->assertEquals([2, 0, 'X'], $result);
     }
 }

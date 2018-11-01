@@ -1,13 +1,18 @@
 <?php
 
-namespace App\Util\TicTAcToe;
+namespace App\Util;
+
+use App\Util\TicTacToe\ArrayBoardParser;
+use App\Util\TicTacToe\BoardAnalyser;
+use App\Util\TicTacToe\BoardAnalyser2;
+use App\Util\TicTacToe\BoardAnalyserFinal;
 
 /**
  * Description of Move
  *
  * @author sr_hosseini <rassoul.hosseini at gmail.com>
  */
-class Move implements MoveInterface
+class MoveService implements MoveInterface
 {
     /**
      * Makes a move using the $boardState * $boardState contains 2 dimensional array of the game field
@@ -19,7 +24,7 @@ class Move implements MoveInterface
      *     ['' , '' , '' ]
      *   ]
      *
-     * Returns an array, containing x and y coordinates for next move, and th e unit that now occupies it.
+     * Returns an array, containing x and y coordinates for next move, and the unit that now occupies it.
      * Example: [2, 0, 'O'] - upper right corner - O player
      *
      * @param array $boardState Current board state
@@ -28,6 +33,11 @@ class Move implements MoveInterface
      */
     public function makeMove($boardState, $playerUnit = 'X')
     {
-        return [2, 0, 'O'];
+        $board = ArrayBoardParser::parse($boardState);
+        $board->finalize($playerUnit);
+//        $analyser = new BoardAnalyser($board, $playerUnit);
+        $analyser = new BoardAnalyser2($board, $playerUnit);
+//        $analyser = new BoardAnalyserFinal($board, $playerUnit);
+        return $analyser->analyse();
     }
 }

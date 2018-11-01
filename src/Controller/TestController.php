@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+use App\Util\MoveService;
 use FOS\RestBundle\View\View;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -19,43 +20,19 @@ use FOS\RestBundle\Controller\Annotations as FOSRest;
 class TestController extends Controller
 {
     /**
-     * Lists all Articles.
-     * @FOSRest\Get("/articles")
+     * @FOSRest\Post("/move")
      *
      * @return array
      */
-    public function getArticleAction(SessionInterface $session)
+    public function moveAction(Request $request, MoveService $moveService)
     {
-//        $repository = $this->getDoctrine()->getRepository(Article::class);
-//
-//        // query for a single Product by its primary key (usually "id")
-//        $article = $repository->findall();
-//
-//        return View::create($article, Response::HTTP_OK , []);
+        $boardState = json_decode($request->getContent());
 
-        // stores an attribute for reuse during a later user request
-//        $session->set('foo', 'bar');
+//        var_dump($boardState);die;
 
-        $foo = $session->get('match');
 
-        return View::create([$foo], Response::HTTP_OK , []);
-    }
+        $result = $moveService->makeMove($boardState, 'X');
 
-    /**
-     * Create Article.
-     * @FOSRest\Post("/article")
-     *
-     * @return array
-     */
-    public function postArticleAction(Request $request)
-    {
-//        $article = new Article();
-//        $article->setName($request->get('name'));
-//        $article->setDescription($request->get('description'));
-//        $em = $this->getDoctrine()->getManager();
-//        $em->persist($article);
-//        $em->flush();
-        return View::create([], Response::HTTP_CREATED , []);
-
+        return View::create($result, Response::HTTP_OK, []);
     }
 }

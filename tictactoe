@@ -4,4 +4,17 @@ case $1 in
     "test")
         php bin/phpunit
     ;;
+    "run")
+#        php bin/console server:run
+        php -S 127.0.0.1:8000 -t public
+    ;;
+    *)
+        cat <<EOF
+Usage:
+  $0 [command]
+
+Available commands:
+  test    run php unit tests
+  run     run server
+EOF
 esac

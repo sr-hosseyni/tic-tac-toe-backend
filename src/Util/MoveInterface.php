@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Util\TicTAcToe;
+namespace App\Util;
 
 /**
  *
