@@ -80,11 +80,11 @@ class BoardAnalyser2
         // make chance and destroy opponent chance
         $this->makeChanceAndDestroyOpponentChance();
 
-//        // make possession in best junction of vacant series
-//        $this->makePossessionInBestJunctionOfVacantSeries();
+        // make possession in best junction of vacant series
+        $this->makePossessionInBestJunctionOfVacantSeries();
         
-//        // select a spot in one of totaly vacant series
-//        $this->selectAVacatSpot();
+        // select a spot in one of totaly vacant series
+        $this->selectAVacatSpot();
 
 //        print_r($this->poitns);
 
@@ -94,7 +94,7 @@ class BoardAnalyser2
         
         if ($result = $this->board->getVacantSpots()) {
             // select a vacant spot on board
-            return $this->makeMoveArray($result[0]);
+            return $this->makeMoveArray($result[array_rand($result)]);
         }
         
 

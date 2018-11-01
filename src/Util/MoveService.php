@@ -36,8 +36,8 @@ class MoveService implements MoveInterface
         $board = ArrayBoardParser::parse($boardState);
         $board->finalize($playerUnit);
 //        $analyser = new BoardAnalyser($board, $playerUnit);
-        $analyser = new BoardAnalyser2($board, $playerUnit);
-//        $analyser = new BoardAnalyserFinal($board, $playerUnit);
+//        $analyser = new BoardAnalyser2($board, $playerUnit);
+        $analyser = new BoardAnalyserFinal($board, $playerUnit);
         return $analyser->analyse();
     }
 }

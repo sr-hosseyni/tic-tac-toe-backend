@@ -74,6 +74,9 @@ class BoardAnalyserFinal
         // destroy opponent chance
         $this->destroyOpponentChance();
 
+//        // make possession in best junction of vacant series
+//        $this->makePossessionInBestJunctionOfVacantSeries();
+
         // select a spot in one of totaly vacant series
         $this->selectAVacatSpot();
 
